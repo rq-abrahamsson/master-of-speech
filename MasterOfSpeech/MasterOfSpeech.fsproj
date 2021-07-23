@@ -7,6 +7,7 @@
 
     <ItemGroup>
         <Compile Include="Config.fs" />
+        <Compile Include="Commands\Commands.fs" />
         <Compile Include="SimpleBot.fs" />
         <Compile Include="Program.fs" />
     </ItemGroup>
@@ -14,6 +15,8 @@
     <ItemGroup>
       <PackageReference Include="DSharpPlus" Version="4.0.1" />
       <PackageReference Include="DSharpPlus.CommandsNext" Version="4.0.1" />
+      <PackageReference Include="FSharpPlus" Version="1.2.1" />
+      <PackageReference Include="FsToolkit.ErrorHandling" Version="2.6.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />

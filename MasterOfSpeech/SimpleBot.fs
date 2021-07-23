@@ -3,7 +3,12 @@ module MasterOfSpeech.SimpleBot
   open System
   open DSharpPlus
   open System.Threading.Tasks
+  open DSharpPlus.CommandsNext
+  open MasterOfSpeech.Commands
   open MasterOfSpeech.Config
+
+  let getCommandsConfig =
+    CommandsNextConfiguration(StringPrefixes = ["!"])
 
   let mainTask (config : AppConfig) =
     async {
@@ -12,6 +17,9 @@ module MasterOfSpeech.SimpleBot
           Token = config.clientKey,
           TokenType = TokenType.Bot)
       let discord = new DiscordClient(config)
+
+      let commands = discord.UseCommandsNext(getCommandsConfig)
+      commands.RegisterCommands<BotCommands>()
       discord.add_MessageCreated(fun s e -> async { Console.WriteLine e.Message.Content } |> Async.StartAsTask :> _)
       discord.add_MessageCreated(fun s e ->
         async {
