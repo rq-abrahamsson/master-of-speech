@@ -1,11 +1,15 @@
 module MasterOfSpeech.DrinkCommands
 
 open System
+open System.IO
+open System.Net.Http
 open System.Text.Json.Serialization
 open System.Threading.Tasks
 open System.Text.Json
+open System.Collections.Generic
 open DSharpPlus.CommandsNext
 open DSharpPlus.CommandsNext.Attributes
+open DSharpPlus.Entities
 open FSharpPlus
 open FsToolkit.ErrorHandling
 
@@ -21,6 +25,7 @@ module Async =
 
 type DrinkDto = {
   strDrink: string
+  strDrinkThumb: string option
   strIngredient1: string option
   strIngredient2: string option
   strIngredient3: string option
@@ -63,6 +68,7 @@ type Ingredient = {
 }
 type Drink = {
   name: string
+  image: string option
   ingredients: Ingredient list
 }
 
@@ -140,6 +146,7 @@ type DrinkDto with
   static member toLocalDrink (drink: DrinkDto) =
     {
       name = drink.strDrink
+      image = drink.strDrinkThumb
       ingredients = getIngredientList drink
     }
 type Drink with
@@ -150,6 +157,20 @@ type Drink with
     |> List.fold (fun acc curr -> $"{acc}{curr}") ""
   member this.getRecipe =
     $"You should make the drink:\n\n{this.name}\n\n{this.ingredientListString}"
+
+let fetchImage (httpClient : HttpClient) (imageUrl : string) =
+  asyncResult {
+    let fileName = imageUrl |> String.split(["/"]) |> Seq.last
+    let! contentStream =
+      new HttpRequestMessage(HttpMethod.Get, imageUrl)
+      |> httpClient.SendAsync
+      |> Async.AwaitTask
+      |> Async.bind (fun response -> response.Content.ReadAsStreamAsync() |> Async.AwaitTask)
+    return (fileName, contentStream)
+  }
+let getImageDict (fileName, fs) =
+  Dictionary<string, Stream>()
+  |> (fun images -> images.Add(fileName, fs); images)
 
 type DrinkCommands() =
   inherit BaseCommandModule()
@@ -166,11 +187,11 @@ type DrinkCommands() =
   member public self.drink(ctx:CommandContext) = //(message:string) =
     asyncResult {
       try
-        use httpClient = new System.Net.Http.HttpClient()
+        use httpClient = new HttpClient()
         let! drink =
           httpClient.GetAsync("https://www.thecocktaildb.com/api/json/v1/1/random.php")
           |> Async.AwaitTask
-          |> Async.map (fun (response : Net.Http.HttpResponseMessage) ->
+          |> Async.map (fun (response : HttpResponseMessage) ->
             match response.IsSuccessStatusCode with
             | true -> Ok response
             | false -> Error response)
@@ -179,8 +200,19 @@ type DrinkCommands() =
           |> AsyncResult.map (fun x -> x.drinks)
           |> AsyncResult.map List.head
           |> AsyncResult.map DrinkDto.toLocalDrink
-        Console.WriteLine(drink)
-        ctx.RespondAsync drink.getRecipe |> ignore
+
+        let! images =
+          drink.image
+          |> Option.get
+          |> fetchImage httpClient
+          |> AsyncResult.map getImageDict
+
+        let! _ =
+          DiscordMessageBuilder()
+            .WithContent(drink.getRecipe)
+            .WithFiles(images)
+            .SendAsync(ctx.Channel)
+        ()
       with
       | e -> Console.WriteLine($"Error {e}")
     } |> Async.StartAsTask :> Task
