@@ -25,6 +25,7 @@ module Async =
 
 type DrinkDto = {
   strDrink: string
+  strInstructions: string option
   strDrinkThumb: string option
   strIngredient1: string option
   strIngredient2: string option
@@ -69,6 +70,7 @@ type Ingredient = {
 type Drink = {
   name: string
   image: string option
+  instructions: string option
   ingredients: Ingredient list
 }
 
@@ -147,6 +149,7 @@ type DrinkDto with
     {
       name = drink.strDrink
       image = drink.strDrinkThumb
+      instructions = drink.strInstructions
       ingredients = getIngredientList drink
     }
 type Drink with
@@ -156,7 +159,11 @@ type Drink with
       $"{ingredient}: {measure}\n")
     |> List.fold (fun acc curr -> $"{acc}{curr}") ""
   member this.getRecipe =
-    $"You should make the drink:\n\n{this.name}\n\n{this.ingredientListString}"
+    let getInstructions =
+      match this.instructions with
+      | Some instructions -> $"\n\n> {instructions}"
+      | None -> ""
+    $"You should make the drink:\n\n**{this.name}**{getInstructions}\n\n{this.ingredientListString}"
 
 let fetchImage (httpClient : HttpClient) (imageUrl : string) =
   asyncResult {
