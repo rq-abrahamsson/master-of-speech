@@ -7,6 +7,10 @@
 
     <ItemGroup>
         <Compile Include="Config.fs" />
+        <Compile Include="Measurement\MeasurementUnits.fs" />
+        <Compile Include="Measurement\MeasurementUnits.Test.fs" />
+        <Compile Include="Measurement\MeasurementParser.fs" />
+        <Compile Include="Measurement\MeasurementParser.Test.fs" />
         <Compile Include="Commands\DrinkCommands.fs" />
         <Compile Include="SimpleBot.fs" />
         <Compile Include="Program.fs" />
@@ -23,6 +27,9 @@
       <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="5.0.0" />
       <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+      <PackageReference Include="NUnit" Version="3.9.0" />
+      <PackageReference Include="NUnit3TestAdapter" Version="3.9.0" />
     </ItemGroup>
 
 </Project>

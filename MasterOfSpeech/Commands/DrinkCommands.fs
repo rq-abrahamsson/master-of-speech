@@ -74,6 +74,14 @@ type Drink = {
   ingredients: Ingredient list
 }
 
+let toSIUnitMeasurement (ingredient: Ingredient) : Ingredient =
+  let convertUnit measure =
+    measure
+  {
+    ingredient with
+      measure = ingredient.measure |> convertUnit
+  }
+
 let getIngredientList (drinkData : DrinkDto) =
   [
     {|
